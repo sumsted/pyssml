@@ -31,5 +31,5 @@ pip install PySSML
     ```
     s.ssml()      # to retrieve ssml with <speak> wrapper
     s.ssml(True)  # to retrieve ssml without <speak> wrapper
-    s.to_object() # to retrieve complete speach output object
+    s.to_object() # to retrieve complete speech output object
     ```
