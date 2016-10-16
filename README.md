@@ -15,21 +15,16 @@ pip install PySSML
 ## Usage
 
 1. Create a PySSML object
-
-```
-s = PySSML()
-```
-
+    ```
+    s = PySSML()
+    ```
 2. Add your speech text
-
-```
-s.say('Hello')
-```
-
+    ```
+    s.say('Hello')
+    ```
 3. Retrieve your SSML
-
-```
-s.ssml()      # to retrieve ssml with <speak> wrapper
-s.ssml(True)  # to retrieve ssml without <speak> wrapper
-s.to_object() # to retrieve complete speach output object
-```
+    ```
+    s.ssml()      # to retrieve ssml with <speak> wrapper
+    s.ssml(True)  # to retrieve ssml without <speak> wrapper
+    s.to_object() # to retrieve complete speach output object
+    ```
