@@ -1,13 +1,13 @@
 # PySSML
 
-PySSML is an SSML builder for Amazon Alexa inspired by and based on https://github.com/mandnyc/ssml-builder.
+PySSML is an SSML builder for Amazon Alexa inspired by and based on JavaScript project https://github.com/mandnyc/ssml-builder.
 
 A sample Alexa skill may be found here https://github.com/sumsted/alexa_pyssml.
 
 ## Installation
 
 ```
-pip install PySSML
+pip install pyssml
 ```
 
 ## Usage

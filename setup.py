@@ -9,13 +9,15 @@ setup(
 
     install_requires=[],
 
-    description='Python library for generating SSML for Amazon Alexa',
+    description='Python library for building SSML for Amazon Alexa',
 
     long_description=
     """
     pyssml
 
-    Python 3 SSML generator for Alexa.
+    Python 3 SSML builder for Alexa.
+
+    Inspired by and based on JavaScript project https://github.com/mandnyc/ssml-builder
     """,
 
     url='http://wildidea.xyz',
