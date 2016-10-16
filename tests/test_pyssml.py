@@ -260,7 +260,10 @@ class TestPySSML(TestCase):
 
         self.assertRaises(TypeError, s.pause, None)
         self.assertRaises(TypeError, s.pause)
-        self.assertRaises(ValueError, s.pause, 'high')
+        self.assertRaises(ValueError, s.pause, '1sec')
+        self.assertRaises(ValueError, s.pause, '11s')
+        self.assertRaises(ValueError, s.pause, '-1s')
+        self.assertRaises(ValueError, s.pause, '10001ms')
 
         self.assertRaises(TypeError, s.audio, None)
         self.assertRaises(TypeError, s.audio)
@@ -271,7 +274,7 @@ class TestPySSML(TestCase):
 
         self.assertRaises(TypeError, s.spell_slowly, **{'text': None, 'duration': None})
         self.assertRaises(TypeError, s.spell_slowly)
-        self.assertRaises(ValueError, s.spell_slowly, **{'text': 'bike', 'duration': 'high'})
+        self.assertRaises(ValueError, s.spell_slowly, **{'text': 'bike', 'duration': '10001ms'})
 
         self.assertRaises(TypeError, s.say_as, **{'word': None, 'interpret': None, 'interpret_format': None})
         self.assertRaises(TypeError, s.say_as, **{'word': 'cup', 'interpret': None, 'interpret_format': None})

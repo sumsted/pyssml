@@ -1,4 +1,19 @@
+""" PySSML is a helper to construct Amazon Alexa SSML
+
+1. Create a PySSML object
+    s = PySSML()
+
+2. Add your speech text
+    s.say('Hello')
+
+3. Retrieve your SSML
+    s.ssml()      # to retrieve ssml with <speak> wrapper
+    s.ssml(True)  # to retrieve ssml without <speak> wrapper
+    s.to_object() # to retrieve complete speach output object
+
+"""
 import re
+import urllib.parse
 
 
 class PySMML():
@@ -39,64 +54,90 @@ class PySMML():
     def _escape(self, text):
         return re.sub('&', 'and', re.sub('[\<\>\"\']', '', str(text)))
 
+    def _validate_duration(self, duration):
+        try:
+            matches = re.match('^(\d+)(s|ms)$', duration)
+            value_part = int(matches.groups()[0])
+            unit_part = matches.groups()[1]
+            if (unit_part == 's' and value_part > 10) or value_part > 10000:
+                raise ValueError('Duration %s is longer than 10 seconds' % duration)
+        except Exception:
+            raise ValueError('Duration %s is invalid' % duration)
+
+    def _validate_url(self, url):
+        try:
+            parse_tokens = urllib.parse.urlparse(url)
+            if parse_tokens[0] == '' or parse_tokens[1] == '':
+                raise ValueError('URL %s invalid' % url)
+        except Exception:
+            raise ValueError('URL %s invalid' % url)
+
     def dump(self):
+        """Dump a list of all items added to ssml_list object"""
         for item in self.ssml_list:
             print(item)
 
     def to_object(self):
+        """Return an Alexa speech output object"""
         return {'type': 'SSML', 'speech': self.ssml()}
 
     def ssml(self, old_method=False):
+        """Return the SSML, pass true to strip <speak> tag wrapper"""
         result = ' '.join(self.ssml_list)
         return result if old_method else '<speak>%s</speak>' % result
 
     def say(self, text):
+        """Add raw text to SSML"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('%s' % self._escape(text))
 
     def paragraph(self, text):
+        """Wrap text with <p> tag"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('<p>%s</p>' % self._escape(text))
 
     def sentence(self, text):
+        """Wrap text with <s> tag"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('<s>%s</s>' % self._escape(text))
 
     def pause(self, duration):
+        """Add a pause to SSML, must be between 0 and 10 seconds"""
         if duration is None:
             raise TypeError('Parameter duration must not be None')
-        if duration == 'high':
-            raise ValueError('Duration %s is invalid' % duration)
+        self._validate_duration(duration)
         self.ssml_list.append("<break time='%s'/>" % self._escape(duration))
 
     def audio(self, url):
+        """Add audio to SSML, must pass a valid url"""
         if url is None:
             raise TypeError('Parameter url must not be None')
-        if url == 'bad':
-            raise ValueError('URL %s is invalid' % url)
+        self._validate_url(url)
         self.ssml_list.append("<audio src='%s'/>" % self._escape(url))
 
     def spell(self, text):
+        """Read out each character in text"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append("<say-as interpret-as='spell-out'>%s</say-as>" % self._escape(text))
 
     def spell_slowly(self, text, duration):
+        """Read out each character in text slowly placing a pause between characters, pause between 0 and 10 seconds"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         if duration is None:
             raise TypeError('Parameter duration must not be None')
-        if duration == 'high':
-            raise ValueError('Duration %s too long or invalid' % duration)
+        self._validate_duration(duration)
         ssml = ''
         for c in self._escape(text):
             ssml += "<say-as interpret-as='spell-out'>%s</say-as> <break time='%s'/> " % (c, self._escape(duration))
         self.ssml_list.append(ssml.strip())
 
     def say_as(self, word, interpret, interpret_format=None):
+        """Special considerations when speaking word include date, numbers, etc."""
         if word is None:
             raise TypeError('Parameter word must not be None')
         if interpret is None:
@@ -112,6 +153,7 @@ class PySMML():
             "<say-as interpret-as='%s'%s>%s</say-as>" % (interpret, format_ssml, str(word)))
 
     def parts_of_speech(self, word, role):
+        """Special considerations when speaking word include usage or role of word"""
         if word is None:
             raise TypeError('Parameter word must not be None')
         if role is None:
@@ -121,6 +163,7 @@ class PySMML():
         self.ssml_list.append("<w role='%s'>%s</w>" % (self._escape(role), self._escape(word)))
 
     def phoneme(self, word, alphabet, ph):
+        """Specify specific phonetics used when speaking word"""
         if word is None:
             raise TypeError('Parameter word must not be None')
         if alphabet is None:
@@ -129,7 +172,6 @@ class PySMML():
             raise TypeError('Parameter ph must not be None')
         if alphabet not in PySMML.ALPHABETS:
             raise ValueError('Unknown alphabet %s' % str(alphabet))
-        # if ph not in PySMML.ALPHABETS[alphabet]:
-        #     raise ValueError('Unknown ph %s in alphabet %s' % (str(ph), str(alphabet)))
         self.ssml_list.append(
-            "<phoneme alphabet='%s' ph='%s'>%s</phoneme>" % (self._escape(alphabet), self._escape(ph), self._escape(word)))
+            "<phoneme alphabet='%s' ph='%s'>%s</phoneme>" % (
+            self._escape(alphabet), self._escape(ph), self._escape(word)))
