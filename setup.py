@@ -20,7 +20,7 @@ setup(
     Inspired by and based on JavaScript project https://github.com/mandnyc/ssml-builder
     """,
 
-    url='http://wildidea.xyz',
+    url='https://github.com/sumsted/pyssml',
 
     author='Scott Umsted',
     author_email='scott@wildidea.xyz',
