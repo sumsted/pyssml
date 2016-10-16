@@ -1,0 +1,6 @@
+.idea
+*.py[cod]
+__pycache__
+*.egg-info
+*dist
+*js
