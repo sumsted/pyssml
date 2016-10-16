@@ -47,9 +47,11 @@ class PySMML():
 
     def __init__(self):
         self.ssml_list = []
+        self.card_list = []
 
     def clear(self):
         self.ssml_list = []
+        self.card_list = []
 
     def _escape(self, text):
         return re.sub('&', 'and', re.sub('[\<\>\"\']', '', str(text)))
@@ -86,23 +88,29 @@ class PySMML():
         result = ' '.join(self.ssml_list)
         return result if old_method else '<speak>%s</speak>' % result
 
+    def card(self):
+        return ' '.join(self.card_list)
+
     def say(self, text):
         """Add raw text to SSML"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('%s' % self._escape(text))
+        self.card_list.append('%s' % self._escape(text))
 
     def paragraph(self, text):
         """Wrap text with <p> tag"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('<p>%s</p>' % self._escape(text))
+        self.card_list.append('\n%s\n' % self._escape(text))
 
     def sentence(self, text):
         """Wrap text with <s> tag"""
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append('<s>%s</s>' % self._escape(text))
+        self.card_list.append('%s ' % self._escape(text))
 
     def pause(self, duration):
         """Add a pause to SSML, must be between 0 and 10 seconds"""
@@ -123,6 +131,7 @@ class PySMML():
         if text is None:
             raise TypeError('Parameter text must not be None')
         self.ssml_list.append("<say-as interpret-as='spell-out'>%s</say-as>" % self._escape(text))
+        self.card_list.append('%s' % self._escape(text))
 
     def spell_slowly(self, text, duration):
         """Read out each character in text slowly placing a pause between characters, pause between 0 and 10 seconds"""
@@ -135,6 +144,7 @@ class PySMML():
         for c in self._escape(text):
             ssml += "<say-as interpret-as='spell-out'>%s</say-as> <break time='%s'/> " % (c, self._escape(duration))
         self.ssml_list.append(ssml.strip())
+        self.card_list.append('%s' % self._escape(text))
 
     def say_as(self, word, interpret, interpret_format=None):
         """Special considerations when speaking word include date, numbers, etc."""
@@ -151,6 +161,7 @@ class PySMML():
         format_ssml = '' if interpret_format is None else " format='%s'" % interpret_format
         self.ssml_list.append(
             "<say-as interpret-as='%s'%s>%s</say-as>" % (interpret, format_ssml, str(word)))
+        self.card_list.append('%s' % self._escape(word))
 
     def parts_of_speech(self, word, role):
         """Special considerations when speaking word include usage or role of word"""
@@ -161,6 +172,7 @@ class PySMML():
         if role not in PySMML.ROLE:
             raise ValueError('Unknown role %s' % str(role))
         self.ssml_list.append("<w role='%s'>%s</w>" % (self._escape(role), self._escape(word)))
+        self.card_list.append('%s' % self._escape(word))
 
     def phoneme(self, word, alphabet, ph):
         """Specify specific phonetics used when speaking word"""
@@ -175,3 +187,4 @@ class PySMML():
         self.ssml_list.append(
             "<phoneme alphabet='%s' ph='%s'>%s</phoneme>" % (
             self._escape(alphabet), self._escape(ph), self._escape(word)))
+        self.card_list.append('%s' % self._escape(word))

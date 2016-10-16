@@ -2,7 +2,7 @@
 
 PySSML is an SSML generator for Amazon Alexa inspired by and based on https://github.com/mandnyc/ssml-builder.
 
-A sample Alexa skill may be found here (todo).
+A sample Alexa skill may be found here https://github.com/sumsted/alexa_pyssml.
 
 ## Installation
 
