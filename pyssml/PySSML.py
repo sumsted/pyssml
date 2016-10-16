@@ -16,7 +16,7 @@ import re
 import urllib.parse
 
 
-class PySMML():
+class PySSML():
     INTERPRET_AS = ['characters', 'cardinal', 'number', 'ordinal', 'digits', 'fraction',
                     'unit', 'date', 'time', 'telephone', 'address']
 
@@ -152,9 +152,9 @@ class PySMML():
             raise TypeError('Parameter word must not be None')
         if interpret is None:
             raise TypeError('Parameter interpret must not be None')
-        if interpret not in PySMML.INTERPRET_AS:
+        if interpret not in PySSML.INTERPRET_AS:
             raise ValueError('Unknown interpret as %s' % str(interpret))
-        if interpret_format is not None and interpret_format not in PySMML.DATE_FORMAT:
+        if interpret_format is not None and interpret_format not in PySSML.DATE_FORMAT:
             raise ValueError('Unknown date format %s' % str(interpret_format))
         if interpret_format is not None and interpret != 'date':
             raise ValueError('Date format %s not valid for interpret as %s' % (str(interpret_format), str(interpret)))
@@ -169,7 +169,7 @@ class PySMML():
             raise TypeError('Parameter word must not be None')
         if role is None:
             raise TypeError('Parameter role must not be None')
-        if role not in PySMML.ROLE:
+        if role not in PySSML.ROLE:
             raise ValueError('Unknown role %s' % str(role))
         self.ssml_list.append("<w role='%s'>%s</w>" % (self._escape(role), self._escape(word)))
         self.card_list.append('%s' % self._escape(word))
@@ -182,7 +182,7 @@ class PySMML():
             raise TypeError('Parameter alphabet must not be None')
         if ph is None:
             raise TypeError('Parameter ph must not be None')
-        if alphabet not in PySMML.ALPHABETS:
+        if alphabet not in PySSML.ALPHABETS:
             raise ValueError('Unknown alphabet %s' % str(alphabet))
         self.ssml_list.append(
             "<phoneme alphabet='%s' ph='%s'>%s</phoneme>" % (
