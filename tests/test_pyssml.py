@@ -46,23 +46,23 @@ class TestPySSML(TestCase):
 
     def test_spell(self):
         s = PySMML()
-        s.spell('mandy')
-        self.assertEqual(s.ssml(), "<speak><say-as interpret-as='spell-out'>mandy</say-as></speak>")
+        s.spell('nick')
+        self.assertEqual(s.ssml(), "<speak><say-as interpret-as='spell-out'>nick</say-as></speak>")
 
         s.clear()
-        s.spell("<mandy's>")
-        self.assertEqual(s.ssml(), "<speak><say-as interpret-as='spell-out'>mandys</say-as></speak>")
+        s.spell("<nick's>")
+        self.assertEqual(s.ssml(), "<speak><say-as interpret-as='spell-out'>nicks</say-as></speak>")
 
     def test_spell_slowly(self):
         s = PySMML()
-        s.spell_slowly('mandy', "500ms")
+        s.spell_slowly('nick', "500ms")
         self.assertEqual(s.ssml(),
-                         "<speak><say-as interpret-as='spell-out'>m</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>a</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>n</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>d</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>y</say-as> <break time='500ms'/></speak>")
+                         "<speak><say-as interpret-as='spell-out'>n</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>i</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>c</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>k</say-as> <break time='500ms'/></speak>")
 
         s.clear()
-        s.spell_slowly("<mandy's>", "500ms")
+        s.spell_slowly("<nick's>", "500ms")
         self.assertEqual(s.ssml(),
-                         "<speak><say-as interpret-as='spell-out'>m</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>a</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>n</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>d</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>y</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>s</say-as> <break time='500ms'/></speak>")
+                         "<speak><say-as interpret-as='spell-out'>n</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>i</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>c</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>k</say-as> <break time='500ms'/> <say-as interpret-as='spell-out'>s</say-as> <break time='500ms'/></speak>")
 
     def test_say_as(self):
         s = PySMML()
@@ -224,6 +224,77 @@ class TestPySSML(TestCase):
         s.phoneme("pecan", "ipa", "pi.kæn")
         self.assertEqual(s.ssml(), "<speak><phoneme alphabet='ipa' ph='pi.kæn'>pecan</phoneme></speak>")
 
+        # s.clear()
+        # s.phoneme("pecan", "ipa", "pɪ'kɑːn")
+        # self.assertEqual(s.ssml(), "<speak><phoneme alphabet='ipa' ph='pɪ&apos;kɑːn'>pecan</phoneme></speak>")
+
+    def test_compound_examples(self):
+        s = PySMML()
+        s.say("Hello")
+        s.paragraph("Nick")
+        self.assertEqual(s.ssml(), "<speak>Hello <p>Nick</p></speak>")
+
         s.clear()
-        s.phoneme("pecan", "ipa", "pɪ'kɑːn")
-        self.assertEqual(s.ssml(), "<speak><phoneme alphabet='ipa' ph='pɪ&apos;kɑːn'>pecan</phoneme></speak>")
+        s.say("How")
+        s.paragraph("are")
+        s.say("you")
+        self.assertEqual(s.ssml(), "<speak>How <p>are</p> you</speak>")
+
+    def test_to_object(self):
+        s = PySMML()
+        s.say("Hello")
+        s.paragraph("Nick")
+        self.assertEqual(s.to_object(), {"type": 'SSML', "speech": "<speak>Hello <p>Nick</p></speak>"})
+
+    def test_input_validation(self):
+        s = PySMML()
+
+        self.assertRaises(TypeError, s.say, None)
+        self.assertRaises(TypeError, s.say)
+
+        self.assertRaises(TypeError, s.paragraph, None)
+        self.assertRaises(TypeError, s.paragraph)
+
+        self.assertRaises(TypeError, s.sentence, None)
+        self.assertRaises(TypeError, s.sentence)
+
+        self.assertRaises(TypeError, s.pause, None)
+        self.assertRaises(TypeError, s.pause)
+        self.assertRaises(ValueError, s.pause, 'high')
+
+        self.assertRaises(TypeError, s.audio, None)
+        self.assertRaises(TypeError, s.audio)
+        self.assertRaises(ValueError, s.audio, 'bad')
+
+        self.assertRaises(TypeError, s.spell, None)
+        self.assertRaises(TypeError, s.spell)
+
+        self.assertRaises(TypeError, s.spell_slowly, **{'text': None, 'duration': None})
+        self.assertRaises(TypeError, s.spell_slowly)
+        self.assertRaises(ValueError, s.spell_slowly, **{'text': 'bike', 'duration': 'high'})
+
+        self.assertRaises(TypeError, s.say_as, **{'word': None, 'interpret': None, 'interpret_format': None})
+        self.assertRaises(TypeError, s.say_as, **{'word': 'cup', 'interpret': None, 'interpret_format': None})
+        self.assertRaises(ValueError, s.say_as, **{'word': 'cup', 'interpret': 'date', 'interpret_format': 'bad'})
+        self.assertRaises(TypeError, s.say_as)
+
+        self.assertRaises(TypeError, s.parts_of_speech, **{'word': None, 'role': None})
+        self.assertRaises(TypeError, s.parts_of_speech, **{'word': 'cat', 'role': None})
+        self.assertRaises(TypeError, s.parts_of_speech)
+
+        self.assertRaises(TypeError, s.phoneme, **{'word': None, 'alphabet': None, 'ph': None})
+        self.assertRaises(TypeError, s.phoneme, **{'word': 'cat', 'alphabet': None, 'ph': None})
+        self.assertRaises(TypeError, s.phoneme, **{'word': 'cat', 'alphabet': 'ipa', 'ph': None})
+        self.assertRaises(ValueError, s.phoneme, **{'word': 'cat', 'alphabet': 'bad', 'ph': 'p'})
+        self.assertRaises(TypeError, s.phoneme)
+
+    def test_ssml(self):
+        s = PySMML()
+
+        s.say('Hello')
+        self.assertEqual(s.ssml(True), "Hello")
+        self.assertEqual(s.ssml(False), "<speak>Hello</speak>")
+
+        s.clear()
+        s.say("<Cat's> & <Dog's>")
+        self.assertEqual(s.ssml(False), "<speak>Cats and Dogs</speak>")
