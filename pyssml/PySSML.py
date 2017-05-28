@@ -16,7 +16,7 @@ import re
 import urllib.parse
 
 
-class PySSML():
+class PySSML:
     INTERPRET_AS = ['characters', 'cardinal', 'number', 'ordinal', 'digits', 'fraction',
                     'unit', 'date', 'time', 'telephone', 'address']
 
@@ -45,6 +45,16 @@ class PySSML():
         'x-sampa': X_SAMPA_CONSONANTS + X_SAMPA_VOWELS + X_SAMPA_SPECIAL
     }
 
+    PAUSE_STRENGTH = ['none', 'x-weak', 'weak', 'medium', 'strong', 'x-strong']
+
+    EMPHASIS_LEVELS = ['strong', 'moderate', 'reduced']
+
+    PROSODY_ATTRIBUTES = {
+        'rate': ['x-slow', 'slow', 'medium', 'fast', 'x-fast'],
+        'pitch': ['x-low', 'low', 'medium', 'high', 'x-high'],
+        'volume': ['silent', 'x-soft', 'soft', 'medium', 'loud', 'x-loud']
+    }
+
     def __init__(self):
         self.ssml_list = []
         self.card_list = []
@@ -58,7 +68,7 @@ class PySSML():
 
     def _validate_duration(self, duration):
         try:
-            matches = re.match('^(\d+)(s|ms)$', duration)
+            matches = re.match('^(\d*\.?\d+)(s|ms)$', duration)
             value_part = int(matches.groups()[0])
             unit_part = matches.groups()[1]
             if (unit_part == 's' and value_part > 10) or value_part > 10000:
@@ -118,6 +128,18 @@ class PySSML():
             raise TypeError('Parameter duration must not be None')
         self._validate_duration(duration)
         self.ssml_list.append("<break time='%s'/>" % self._escape(duration))
+
+    def pause_by_strength(self, strength):
+        if strength is None:
+            raise TypeError('Parameter strength must not be None')
+        try:
+            strength = strength.lower().strip()
+        except AttributeError:
+            raise AttributeError('Parameter strength must be a string')
+        if strength in PySSML.PAUSE_STRENGTH:
+            self.ssml_list.append("<break strength='%s'/>" % strength)
+        else:
+            raise ValueError('Value %s is not a valid strength' % strength)
 
     def audio(self, url):
         """Add audio to SSML, must pass a valid url"""
@@ -186,5 +208,64 @@ class PySSML():
             raise ValueError('Unknown alphabet %s' % str(alphabet))
         self.ssml_list.append(
             "<phoneme alphabet='%s' ph='%s'>%s</phoneme>" % (
-            self._escape(alphabet), self._escape(ph), self._escape(word)))
+                self._escape(alphabet), self._escape(ph), self._escape(word)))
         self.card_list.append('%s' % self._escape(word))
+
+    def emphasis(self, level, word):
+        if level is None:
+            raise TypeError('Parameter level must not be None')
+        if word is None:
+            raise TypeError('Parameter word must not be None')
+        try:
+            if len(word.strip()) == 0:
+                raise ValueError('Parameter word must not be empty')
+            level = level.lower().strip()
+            if level in PySSML.EMPHASIS_LEVELS:
+                self.ssml_list.append("<emphasis level='%s'>%s</emphasis>" % (level, self._escape(word)))
+            else:
+                raise ValueError('Unknown emphasis level %s' % level)
+        except AttributeError:
+            raise AttributeError('Parameters must be strings')
+
+    def prosody(self, attributes, word):
+        tag_attributes = ''
+        if attributes is None:
+            raise TypeError('Parameter attributes must not be None')
+        if word is None:
+            raise TypeError('Parameter word must not be None')
+        try:
+            for k, v in attributes.items():
+                v = v.lower().strip()
+                if v in PySSML.PROSODY_ATTRIBUTES[k]:
+                    tag_attributes += " %s='%s'" % (k, v)
+                elif k == 'rate':
+                    rate_value = int(''.join([c for c in v if c in '0123456789']))
+                    if 0 <= rate_value <= 50:
+                        tag_attributes += " %s='%d%%'" % (k, rate_value)
+                    else:
+                        raise ValueError('Attribute %s value %s is invalid' % (v, k))
+                else:
+                    raise ValueError('Attribute %s value %s is invalid' % (v, k))
+            self.ssml_list.append("<prosody%s>%s</prosody>" % (tag_attributes, self._escape(word)))
+        except AttributeError:
+            raise AttributeError('Parameters must be strings')
+        except KeyError:
+            raise KeyError('Attribute is unknown')
+        except ValueError:
+            raise ValueError('Attribute value is invalid')
+
+    def sub(self, alias, word):
+        if alias is None:
+            raise TypeError('Parameter alias must not be None')
+        if word is None:
+            raise TypeError('Parameter word must not be None')
+        try:
+            alias = alias.strip()
+            if len(alias) == 0:
+                raise ValueError('Alias must not be empty')
+            word = word.strip()
+            if len(word) == 0:
+                raise ValueError('Word must not be empty')
+            self.ssml_list.append("<sub alias='%s'>%s</sub>" % (alias, self._escape(word)))
+        except AttributeError:
+            raise AttributeError('Parameters alias and word must be strings')

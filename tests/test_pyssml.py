@@ -301,3 +301,77 @@ class TestPySSML(TestCase):
         s.clear()
         s.say("<Cat's> & <Dog's>")
         self.assertEqual(s.ssml(False), "<speak>Cats and Dogs</speak>")
+
+    def test_pause_by_strength(self):
+        s = PySSML()
+
+        s.pause_by_strength('weak')
+        self.assertEqual(s.ssml(), "<speak><break strength='weak'/></speak>")
+
+        s.clear()
+        s.pause_by_strength(' STRONG')
+        self.assertEqual(s.ssml(), "<speak><break strength='strong'/></speak>")
+
+        s.clear()
+        s.pause_by_strength('x-STrong ')
+        self.assertEqual(s.ssml(), "<speak><break strength='x-strong'/></speak>")
+
+        self.assertRaises(TypeError, s.pause_by_strength, None)
+        self.assertRaises(TypeError, s.pause_by_strength)
+        self.assertRaises(ValueError, s.pause_by_strength, 'bad')
+        self.assertRaises(AttributeError, s.pause_by_strength, {})
+
+    def test_emphasis(self):
+        s = PySSML()
+        s.emphasis('strong', 'helicopter')
+        self.assertEqual(s.ssml(), "<speak><emphasis level='strong'>helicopter</emphasis></speak>")
+        s.clear()
+        s.emphasis(' MODERATE ', 'helicopter')
+        self.assertEqual(s.ssml(), "<speak><emphasis level='moderate'>helicopter</emphasis></speak>")
+        s.clear()
+        s.emphasis('Reduced ', 'helicopter')
+        self.assertEqual(s.ssml(), "<speak><emphasis level='reduced'>helicopter</emphasis></speak>")
+
+        self.assertRaises(TypeError, s.emphasis, **{'level': None, 'word': None})
+        self.assertRaises(TypeError, s.emphasis, **{'level': 'reduced', 'word': None})
+        self.assertRaises(ValueError, s.emphasis, **{'level': 'bad', 'word': 'clown'})
+        self.assertRaises(AttributeError, s.emphasis, **{'level': {}, 'word': 'clown'})
+
+    def test_prosody(self):
+        good_attributes = {'rate': 'slow', 'pitch': 'high', 'volume': 'loud'}
+        bad_attribute = {'rate': 'slow', 'pitcher': 'high', 'volume': 'loud'}
+        bad_attribute2 = {'rate': {}, 'pitch': 'high', 'volume': 'loud'}
+        bad_value = {'rate': 'slow', 'pitch': 'Frank', 'volume': 'loud'}
+        good_rate_percentage = {'rate': '  + 40 %'}
+        bad_rate_percentage = {'rate': '  + 60 %'}
+        bad_rate_percentage2 = {'rate': '  + thirty %'}
+
+        s = PySSML()
+        s.prosody(good_attributes, 'helicopter')
+        result = "<speak><prosody rate='slow' pitch='high' volume='loud'>helicopter</prosody></speak>"
+        self.assertEqual(len(s.ssml()), len(result))
+        s.clear()
+        s.prosody(good_rate_percentage, 'helicopter')
+        result = "<speak><prosody rate='40%'>helicopter</prosody></speak>"
+        self.assertEqual(len(s.ssml()), len(result))
+        s.clear()
+
+        self.assertRaises(TypeError, s.prosody, **{'attributes': None, 'word': None})
+        self.assertRaises(KeyError, s.prosody, **{'attributes': bad_attribute, 'word': 'clown'})
+        self.assertRaises(ValueError, s.prosody, **{'attributes': bad_value, 'word': 'clown'})
+        self.assertRaises(ValueError, s.prosody, **{'attributes': bad_rate_percentage, 'word': 'clown'})
+        self.assertRaises(ValueError, s.prosody, **{'attributes': bad_rate_percentage2, 'word': 'clown'})
+        self.assertRaises(AttributeError, s.prosody, **{'attributes': bad_attribute2, 'word': 'clown'})
+
+    def test_sub(self):
+        s = PySSML()
+        s.sub('dog', 'cat')
+        self.assertEqual(s.ssml(), "<speak><sub alias='dog'>cat</sub></speak>")
+        s.clear()
+
+        self.assertRaises(TypeError, s.sub, **{'alias': 'cloud', 'word': None})
+        self.assertRaises(TypeError, s.sub, **{'alias': None, 'word': 'rain'})
+        self.assertRaises(ValueError, s.sub, **{'alias': 'robot', 'word': ''})
+        self.assertRaises(ValueError, s.sub, **{'alias': '', 'word': 'wheel'})
+        self.assertRaises(AttributeError, s.sub, **{'alias': 'ball', 'word': {}})
+        self.assertRaises(AttributeError, s.sub, **{'alias': {}, 'word': 'stick'})

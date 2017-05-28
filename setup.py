@@ -5,7 +5,7 @@ setup(
 
     name='pyssml',
     packages=['pyssml'],
-    version='0.1.2',
+    version='0.1.3',
 
     install_requires=[],
 
