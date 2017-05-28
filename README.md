@@ -15,6 +15,8 @@ pip install pyssml
 1. Create a PySSML object
 
     ```
+    from pyssml.PySSML import PySSML
+
     s = PySSML()
     ```
 
