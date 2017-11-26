@@ -63,6 +63,10 @@ class PySSML:
         self.ssml_list = []
         self.card_list = []
 
+    def concat(self, other_ssml):
+        self.ssml_list += other_ssml.ssml_list
+        self.card_list += other_ssml.card_list
+
     def _escape(self, text):
         return re.sub('&', 'and', re.sub('[\<\>\"\']', '', str(text)))
 
