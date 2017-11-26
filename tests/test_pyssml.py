@@ -375,3 +375,14 @@ class TestPySSML(TestCase):
         self.assertRaises(ValueError, s.sub, **{'alias': '', 'word': 'wheel'})
         self.assertRaises(AttributeError, s.sub, **{'alias': 'ball', 'word': {}})
         self.assertRaises(AttributeError, s.sub, **{'alias': {}, 'word': 'stick'})
+
+    def test_concat(self):
+        s1 = PySSML()
+        s2 = PySSML()
+        s1.say('This')
+        s2.say('works!')
+        s1.concat(s2)
+        self.assertEqual(
+            s1.ssml(),
+            "<speak>This works!</speak>"
+        )
